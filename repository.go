@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -79,7 +79,6 @@ func (r *Repository) GetBookByID(context *fiber.Ctx) error {
 		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Id cannot be empty"})
 		return nil
 	}
-	fmt.Println("the id is ", id)
 	err := r.DB.Where("id=?", id).First(bookModel).Error
 	if err != nil {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Could not fetch the book"})
@@ -93,18 +92,17 @@ func (r *Repository) GetBookByID(context *fiber.Ctx) error {
 
 // Auth -------------------start---------------------
 func (r *Repository) Login(context *fiber.Ctx) error {
-	req := dto.LoginReq{}
-	user := models.Users{}
-	err := context.BodyParser(&req)
+ 	user := models.Users{}
+	err := context.BodyParser(&user)
 	if err != nil {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Request Failed"})
 		return err
 	}
-	if req.Username == "" || req.Password == "" {
+	if user.Username == "" || user.Password == "" {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Field cannot be empty"})
 		return nil
 	}
-	err = r.DB.Where("username = ? AND password = ?", req.Username, req.Password).First(&user).Error
+	err = r.DB.Where("username = ? AND password = ?", user.Username, user.Password).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Incorrect Username or Password"})
@@ -124,7 +122,15 @@ func (r *Repository) Login(context *fiber.Ctx) error {
 		log.Fatal(err)
 		return err
 	}
+	user.Token = signedToken
+	r.DB.Save(&user)
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = signedToken
+	cookie.Expires = time.Now().Add(12 * time.Minute)
+	context.Cookie(cookie)
 	login := &dto.LoginRes{
+		Id:       user.ID,
 		Username: user.Username,
 		Email:    user.Email,
 		Token:    signedToken,
@@ -134,7 +140,7 @@ func (r *Repository) Login(context *fiber.Ctx) error {
 }
 
 func (r *Repository) SignUp(context *fiber.Ctx) error {
-	user := dto.SignUpReq{}
+	user := models.Users{}
 
 	err := context.BodyParser(&user)
 	if user.Username == "" || user.Password == "" || user.Email == "" {
@@ -150,7 +156,6 @@ func (r *Repository) SignUp(context *fiber.Ctx) error {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Could not create user"})
 		return err
 	}
-	r.CreateSampleTemplate(context)
 	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "User created Successfully"})
 	return nil
 }
@@ -159,38 +164,62 @@ func (r *Repository) SignUp(context *fiber.Ctx) error {
 
 // Tickets -----------------start ---------------------
 func (r *Repository) GeTTicketTemplate(context *fiber.Ctx) error {
-	ticketDesign := dto.TicketDesign{}
+	ticketDesign := models.TicketDesign{}
+	defaultTicketDesign := dto.TicketDesignRes()
+
 	id := context.Params("id")
 	if id == "" {
-		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Id cannot be empty", "data": "s"})
+		context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Default Template", "data": defaultTicketDesign})
 		return nil
 	}
-	err := r.DB.Where("userID = ?", id).First(&ticketDesign).Error
+	userid, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
-		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Default Template", "data": dto.TicketDesignRes()})
-		return nil
-	}
-	context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Default Template", "data": ticketDesign})
-	return nil
-}
-
-func (r *Repository) CreateSampleTemplate(context *fiber.Ctx) error {
-	err := r.DB.Create(dto.TicketDesignRes()).Error
-	if err != nil {
-		log.Fatal("cannot create the sample ticket")
+		log.Fatal("Error:", err)
 		return err
 	}
-	print("Sample ticket template created succesfully")
+	userID := uint(userid)
+	ticketDesign = models.TicketDesign{
+		HostName:   defaultTicketDesign.HostName,
+		Background: defaultTicketDesign.Background,
+		Text:       defaultTicketDesign.Text,
+		UserID:     userID,
+		Border:     defaultTicketDesign.Border,
+	}
+
+	result := r.DB.FirstOrCreate(&ticketDesign, models.TicketDesign{UserID: userID})
+	if result.Error != nil {
+		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Internal Server Error"})
+		return result.Error
+	}
+	response := dto.TicketDesign{
+		HostName:   ticketDesign.HostName,
+		Background: ticketDesign.Background,
+		Border:     ticketDesign.Border,
+		Text:       ticketDesign.Text,
+	}
+
+	if result.RowsAffected == 1 {
+		context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Default Template", "data": response})
+		return nil
+	}
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "User Saved Template", "data": response})
 	return nil
 }
 
 func (r *Repository) CreateTicketTemplate(context *fiber.Ctx) error {
+	cookie := context.Cookies("token")
+	if cookie == "" {
+		context.Status(http.StatusUnauthorized).JSON(&fiber.Map{"message": "User Must Logged In To perform this task"})
+		return nil
+	}
+
 	ticketDesign := models.TicketDesign{}
 	err := context.BodyParser(&ticketDesign)
 	if err != nil {
 		context.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "request failed"})
 		return err
 	}
+
 	err = r.DB.Create(&ticketDesign).Error
 
 	if err != nil {

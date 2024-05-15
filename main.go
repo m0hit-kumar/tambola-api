@@ -18,8 +18,8 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 	api.Get("/books", r.GetBooks)
 	api.Post("/login", r.Login)
 	api.Post("/signup", r.SignUp)
-	api.Get("/ticketDesign/:id", r.GeTTicketTemplate)
-	api.Post("/ticketDesign", r.CreateTicketTemplate)
+	api.Get("/ticketDesign/:id?", r.GeTTicketTemplate)
+	api.Post("/create_ticketDesign", r.CreateTicketTemplate)
 }
 func main() {
 	err := godotenv.Load(".env")
