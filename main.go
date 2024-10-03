@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/m0hit-kumar/tambola/migrations"
 	"github.com/m0hit-kumar/tambola/storage"
@@ -12,6 +13,7 @@ import (
 
 func (r *Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
+	api.Get("/test",r.Test)
 	api.Post("/create_books", r.CreateBook)
 	api.Delete("/delete_book/:id", r.DeleteBook)
 	api.Get("/get_books/:id", r.GetBookByID)
@@ -26,6 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
 	config := &storage.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
@@ -46,6 +49,8 @@ func main() {
 		DB: db,
 	}
 	app := fiber.New()
+	 
+    app.Use(cors.New())
 	r.SetupRoutes(app)
 	app.Listen(":8080")
 

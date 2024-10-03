@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,6 +23,17 @@ type Book struct {
 	Title     string `json:"title"`
 	Publisher string `json:"publisher"`
 }
+
+//---------------- Test server is running ----------------
+func (r *Repository) Test(context *fiber.Ctx) error {
+	fmt.Println("test")
+
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Server Running successfully"})
+	return nil
+}
+
+//-----------------Test server is running------------------
+
 
 // Books   --------------- start-------------------
 func (r *Repository) CreateBook(context *fiber.Ctx) error {
@@ -93,19 +105,20 @@ func (r *Repository) GetBookByID(context *fiber.Ctx) error {
 // Auth -------------------start---------------------
 func (r *Repository) Login(context *fiber.Ctx) error {
  	user := models.Users{}
+	fmt.Println(user)
 	err := context.BodyParser(&user)
 	if err != nil {
-		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Request Failed"})
+		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Username/Email or Password cannot be empty"})
 		return err
 	}
-	if user.Username == "" || user.Password == "" {
+    if (user.Username == "" && user.Email == "") || user.Password == "" {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Field cannot be empty"})
 		return nil
 	}
-	err = r.DB.Where("username = ? AND password = ?", user.Username, user.Password).First(&user).Error
+	err = r.DB.Where("(username = ? OR email = ?) AND password = ?", user.Username,user.Email, user.Password).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Incorrect Username or Password"})
+			context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Incorrect Username/Email or Password"})
 			return nil
 		}
 		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Internal Server Error"})
