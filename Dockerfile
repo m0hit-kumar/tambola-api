@@ -1,7 +1,15 @@
-FROM golang:1.23
+FROM golang:1.23-alpine
 
 WORKDIR /usr/src/app
 
 COPY . .
 
 RUN go mod tidy
+
+RUN go build -o main ./main.go
+
+RUN chmod +x main
+
+EXPOSE 8080
+
+CMD [ "./main" ]
