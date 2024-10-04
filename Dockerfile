@@ -10,6 +10,6 @@ RUN go build -o main .
 
 RUN chmod +x main
 
-EXPOSE 8080
+EXPOSE 4040
 
 CMD [ "./main" ]
