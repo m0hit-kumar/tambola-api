@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -26,8 +25,6 @@ type Book struct {
 
 //---------------- Test server is running ----------------
 func (r *Repository) Test(context *fiber.Ctx) error {
-	fmt.Println("test")
-
 	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Server Running successfully"})
 	return nil
 }
@@ -105,8 +102,7 @@ func (r *Repository) GetBookByID(context *fiber.Ctx) error {
 // Auth -------------------start---------------------
 func (r *Repository) Login(context *fiber.Ctx) error {
  	user := models.Users{}
-	fmt.Println(user)
-	err := context.BodyParser(&user)
+ 	err := context.BodyParser(&user)
 	if err != nil {
 		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Username/Email or Password cannot be empty"})
 		return err

@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  tambolaapi:
+    image: tambolaapi
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
