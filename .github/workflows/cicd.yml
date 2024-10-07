@@ -28,4 +28,4 @@ jobs:
       - name: Delete old container
         run: docker rm -f tambola-api-container
       - name: Run docker container
-        run: docker run -d -p 4040:4040 --name tambola-api-container m0hitkumar/tambola-api
+        run: docker run -d -p 4040:4040 --name tambola-api-container --env-file .env m0hitkumar/tambola-api
