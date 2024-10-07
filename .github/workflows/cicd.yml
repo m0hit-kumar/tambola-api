@@ -11,16 +11,14 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
-      - name: Test if PORT is set
+      - name: Check if .env file exists
         run: |
-          if [ -z "${PORT}" ]; then
-            echo "PORT is not set";
-            exit 1;
+          if [ -f .env ]; then
+            echo ".env file created successfully."
           else
-            echo "PORT is set correctly";
+            echo ".env file not found."
+            exit 1
           fi
-        env:
-          PORT: ${{ secrets.PORT }}
       - name: Create .env file
         run: echo "PORT=${{ secrets.PORT }}" >> .env
       - name: Login to docker hub
