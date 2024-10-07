@@ -12,12 +12,12 @@ services:
   db:
     image: postgres:alpine
     environment:
-      - POSTGRES_USER=${{secrets.DB_USER}}
-      - POSTGRES_PASSWORD=${{secrets.DB_PASSWORD}}
-      - POSTGRES_DB=${{secrets.DB_NAME}}
-      - POSTGRES_HOST=${{secrets.DB_HOST}}
-      - POSTGRES_PORT=${{secrets.DB_PORT}}
-      - POSTGRES_SSLMODE=${{secrets.DB_SSLMODE}}
+      - POSTGRES_USER=${DB_USER}}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}}
+      - POSTGRES_DB=${DB_NAME}}
+      - POSTGRES_HOST=${DB_HOST}}
+      - POSTGRES_PORT=${DB_PORT}}
+      - POSTGRES_SSLMODE=${DB_SSLMODE}}
     ports:
       - 5432:5432
     volumes:
