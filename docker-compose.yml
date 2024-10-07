@@ -1,9 +1,16 @@
 services:
   tambolaapi:
     image: tambolaapi
+    environment:
+      POSTGRES_HOST: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "admin"
+      POSTGRES_DB: "tambola"
+      POSTGRES_SSLMODE: "disable"
     build: .
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     ports:
       - 8080:8080
     volumes:
@@ -15,9 +22,9 @@ services:
       POSTGRES_HOST: "db"
       POSTGRES_PORT: "5432"
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: tambola
-      POSTGRES_SSLMODE: disable
+      POSTGRES_PASSWORD: "admin"
+      POSTGRES_DB: "tambola"
+      POSTGRES_SSLMODE: "disable"
     ports:
       - 5432:5432
     volumes:
