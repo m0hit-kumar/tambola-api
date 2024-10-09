@@ -11,20 +11,21 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
+      - name: Create .env file
+        run: echo "PORT=${{ secrets.PORT }}" >> .env
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
-        run: docker build -t m0hitkumar/tambola-cicd .
+        run: docker build -t m0hitkumar/tambola-api .
       - name: Push image to docker hub
-        run: docker push m0hitkumar/tambola-cicd:latest
-
+        run: docker push m0hitkumar/tambola-api:latest
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
       - name: Pull docker image
-        run: sudo docker pull m0hitkumar/tambola-cicd:latest
+        run: docker pull m0hitkumar/tambola-api:latest
       - name: Delete old container
-        run: sudo docker rm -f tambola-cicd-container
+        run: docker rm -f tambola-api-container
       - name: Run docker container
-        run: sudo docker run -d -p 8080:8080 --name tambola-cicd-container m0hitkumar/tambola-cicd
+        run: docker run -d -p 4040:4040 --name tambola-api-container m0hitkumar/tambola-api
