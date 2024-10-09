@@ -18,13 +18,13 @@ jobs:
       - name: Push image to docker hub
         run: docker push m0hitkumar/tambola-cicd:latest
 
-  # deploy:
-  #   needs: build
-  #   runs-on: self-hosted
-  #   steps:
-  #     - name: Pull docker image
-  #       run: sudo docker pull m0hitkumar/tambola-api:latest
-  #     - name: Delete old container
-  #       run: sudo docker rm -f tambola-api-container || true
-  #     - name: Run docker container
-  #       run: sudo docker run -d -p 8080:8080 --name tambola-api-container m0hitkumar/tambola-api
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull docker image
+        run: sudo docker pull m0hitkumar/tambola-cicd:latest
+      - name: Delete old container
+        run: sudo docker rm -f tambola-cicd-container || true
+      - name: Run docker container
+        run: sudo docker run -d -p 8080:8080 --name tambola-api-container m0hitkumar/tambola-cicd
