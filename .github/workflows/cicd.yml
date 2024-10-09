@@ -27,4 +27,4 @@ jobs:
       - name: Delete old container
         run: sudo docker rm -f tambola-cicd-container || true
       - name: Run docker container
-        run: sudo docker run -d -p 8080:8080 --name tambola-api-container m0hitkumar/tambola-cicd
+        run: sudo docker run -d -p 8080:8080 --name tambola-cicd-container m0hitkumar/tambola-cicd
