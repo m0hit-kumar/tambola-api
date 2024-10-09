@@ -1,34 +1,13 @@
-services:
-  tambolaapi:
-    image: tambolaapi
-    environment:
-      POSTGRES_HOST: "db"
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "admin"
-      POSTGRES_DB: "tambola"
-      POSTGRES_SSLMODE: "disable"
-    build: .
-    # env_file:
-    #   - .env
-    ports:
-      - 8080:8080
-    volumes:
-      - .:/usr/src/app
-    command: go run . -b 0.0.0.0
-  db:
-    image: postgres:alpine
-    environment:
-      POSTGRES_HOST: "db"
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "admin"
-      POSTGRES_DB: "tambola"
-      POSTGRES_SSLMODE: "disable"
-    ports:
-      - 5432:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+version: "3.8"
 
-volumes:
-  pgdata:
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=${{ secrets.DB_HOST }}
+      - DB_PORT=${{ secrets.DB_PORT }}
+      - DB_USER=${{ secrets.DB_USER }}
+      - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+      - DB_NAME=${{ secrets.DB_NAME }}
