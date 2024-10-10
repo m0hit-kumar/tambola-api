@@ -26,6 +26,6 @@ jobs:
       - name: Pull docker image
         run: sudo docker pull m0hitkumar/tambola-api:latest
       - name: Delete old container
-        run: docker rm -f tambola-api-container
+        run: sudo docker rm -f tambola-api-container
       - name: Run docker container
-        run: docker run -d -p 8080:8080 --name tambola-api-container m0hitkumar/tambola-api
+        run: sudo docker run -d -p 8080:8080 --name tambola-api-container m0hitkumar/tambola-api
