@@ -24,7 +24,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull docker image
-        run: docker pull m0hitkumar/tambola-api:latest
+        run: sudo docker pull m0hitkumar/tambola-api:latest
       - name: Delete old container
         run: docker rm -f tambola-api-container
       - name: Run docker container
