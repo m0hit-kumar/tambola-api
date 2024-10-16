@@ -24,9 +24,11 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 	api.Post("/create_ticketDesign", r.CreateTicketTemplate)
 }
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Println("No .env file found, using environment variables")
+		}
 	}
 	
 	config := &storage.Config{
