@@ -11,7 +11,7 @@ import (
 	"github.com/m0hit-kumar/tambola/storage"
 )
 
-// test
+
 func (r *Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Get("/test",r.Test)
@@ -24,6 +24,7 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 	api.Get("/ticketDesign/:id?", r.GeTTicketTemplate)
 	api.Post("/create_ticketDesign", r.CreateTicketTemplate)
 }
+
 func main() {
 	if os.Getenv("ENV") != "production" {
 		err := godotenv.Load(".env")
