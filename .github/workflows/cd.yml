@@ -23,4 +23,4 @@ jobs:
           DB_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
           DB_NAME: ${{secrets.DB_NAME}}
           DB_SSLMODE: ${{secrets.DB_SSLMODE}}
-        run: sudo docker run -d -p 8080:8080 -e ENV=production -e DB_HOST=$DB_HOST -e DB_PORT=$DB_PORT -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_NAME=$DB_NAME -e DB_SSLMODE=$DB_SSLMODE tambola-api
+        run: sudo docker run -d -p 8080:8080  --name tambola-api-container -e ENV=production -e DB_HOST=$DB_HOST -e DB_PORT=$DB_PORT -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_NAME=$DB_NAME -e DB_SSLMODE=$DB_SSLMODE m0hitkumar/tambola-api
