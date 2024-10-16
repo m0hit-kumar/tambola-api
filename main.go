@@ -11,6 +11,7 @@ import (
 	"github.com/m0hit-kumar/tambola/storage"
 )
 
+// test
 func (r *Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Get("/test",r.Test)
