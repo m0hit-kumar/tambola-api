@@ -5,13 +5,5 @@ type TicketDesign struct {
 	Background string `json:"background" `
 	Border     string `json:"border"  `
 	Text       string `json:"text"`
-}
-
-func TicketDesignRes() TicketDesign {
-	return TicketDesign{
-		HostName:   "Tambola",
-		Background: "#ffffff",
-		Border:     "#000000",
-		Text:       "#000000",
-	}
+	RoomId     string `json:"roomId" `
 }

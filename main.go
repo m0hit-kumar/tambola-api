@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -21,16 +22,18 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 	api.Get("/books", r.GetBooks)
 	api.Post("/login", r.Login)
 	api.Post("/signup", r.SignUp)
-	api.Get("/ticketDesign/:id?", r.GeTTicketTemplate)
+	api.Get("/ticketDesign/:roomId?", r.GetTicketTemplate)
 	api.Post("/create_ticketDesign", r.CreateTicketTemplate)
 }
 
 func main() {
+	allowOrigins:="https://tambola-theta.vercel.app/"
 	if os.Getenv("ENV") != "production" {
 		err := godotenv.Load(".env")
 		if err != nil {
 			log.Println("No .env file found, using environment variables")
 		}
+		allowOrigins = "http://localhost:3000"
 	}
 	
 	config := &storage.Config{
@@ -53,8 +56,14 @@ func main() {
 		DB: db,
 	}
 	app := fiber.New()
-	 
-    app.Use(cors.New())
+	fmt.Print(allowOrigins)
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:  allowOrigins,   // Your frontend URL
+        AllowCredentials: true,                      // Important for cookies
+        AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+        ExposeHeaders:    "Set-Cookie",              // Important for cookies
+        AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",            
+     }))
 	r.SetupRoutes(app)
 	app.Listen(":8080")
 

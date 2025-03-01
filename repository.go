@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -172,30 +172,14 @@ func (r *Repository) SignUp(context *fiber.Ctx) error {
 // Auth---------------------end-----------------------
 
 // Tickets -----------------start ---------------------
-func (r *Repository) GeTTicketTemplate(context *fiber.Ctx) error {
+func (r *Repository) GetTicketTemplate(context *fiber.Ctx) error {
 	ticketDesign := models.TicketDesign{}
-	defaultTicketDesign := dto.TicketDesignRes()
+ 
+	roomId := context.Params("roomId")
+	 
+ 	fmt.Print(roomId)
+    result := r.DB.Where("room_id = ?", roomId).First(&ticketDesign)
 
-	id := context.Params("id")
-	if id == "" {
-		context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Default Template", "data": defaultTicketDesign})
-		return nil
-	}
-	userid, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		log.Fatal("Error:", err)
-		return err
-	}
-	userID := uint(userid)
-	ticketDesign = models.TicketDesign{
-		HostName:   defaultTicketDesign.HostName,
-		Background: defaultTicketDesign.Background,
-		Text:       defaultTicketDesign.Text,
-		UserID:     userID,
-		Border:     defaultTicketDesign.Border,
-	}
-
-	result := r.DB.FirstOrCreate(&ticketDesign, models.TicketDesign{UserID: userID})
 	if result.Error != nil {
 		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Internal Server Error"})
 		return result.Error
@@ -205,37 +189,63 @@ func (r *Repository) GeTTicketTemplate(context *fiber.Ctx) error {
 		Background: ticketDesign.Background,
 		Border:     ticketDesign.Border,
 		Text:       ticketDesign.Text,
+		RoomId: 	ticketDesign.RoomId,
 	}
-
-	if result.RowsAffected == 1 {
-		context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Default Template", "data": response})
-		return nil
-	}
+	// responseJSON, err := json.Marshal(response)
+	// if err != nil {
+	// 	log.Printf("Error marshaling response to JSON: %v", err)
+	// 	context.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": "Error converting response to JSON"})
+	// 	return err
+	// }
+	// cookie := new(fiber.Cookie)
+	// cookie.Name = ticketDesign.RoomId
+	// cookie.Value =string(responseJSON)
+	// cookie.Expires = time.Now().Add(12 * time.Minute)
+	// context.Cookie(cookie)
 	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "User Saved Template", "data": response})
 	return nil
 }
 
 func (r *Repository) CreateTicketTemplate(context *fiber.Ctx) error {
-	cookie := context.Cookies("token")
-	if cookie == "" {
-		context.Status(http.StatusUnauthorized).JSON(&fiber.Map{"message": "User Must Logged In To perform this task"})
-		return nil
-	}
+	tokenString := context.Cookies("token")
+    if tokenString == "" {
+        context.Status(http.StatusUnauthorized).JSON(&fiber.Map{"message": "User must be logged in to perform this task"})
+        return nil
+    }
+
+     token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+        }
+        return []byte("my_secret_key"), nil
+    })
+
+     if err != nil || !token.Valid {
+        context.Status(http.StatusUnauthorized).JSON(&fiber.Map{"message": "Invalid or expired token, please log in again"})
+        return nil
+    }
 
 	ticketDesign := models.TicketDesign{}
-	err := context.BodyParser(&ticketDesign)
+	err = context.BodyParser(&ticketDesign)
 	if err != nil {
-		context.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "request failed"})
+		context.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "Request failed"})
 		return err
 	}
-
-	err = r.DB.Create(&ticketDesign).Error
+ 	err = r.DB.Model(&models.TicketDesign{}).
+	Where("room_id = ?", ticketDesign.RoomId).
+	 Assign(models.TicketDesign{
+		HostName:   ticketDesign.HostName,
+		Background: ticketDesign.Background,
+		Border:     ticketDesign.Border,
+		Text:       ticketDesign.Text,
+	}).
+	FirstOrCreate(&ticketDesign).Error
 
 	if err != nil {
-		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Could not Ticket Template"})
+		context.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Could not create ticket template"})
 		return err
 	}
-	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Ticket Template created successfully"})
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "Ticket design has been saved"})
 
 	return nil
 }

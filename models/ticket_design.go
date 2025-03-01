@@ -8,6 +8,5 @@ type TicketDesign struct {
 	Background string `json:"background" gorm:"not null"`
 	Border     string `json:"border" gorm:"not null"`
 	Text       string `json:"text" gorm:"not null"`
-	UserID     uint   `json:"userId" gorm:"not null;unique"`
-	User       Users  `gorm:"foreignKey:UserID;references:ID"`
-}
+	RoomId   string `json:"roomId" gorm:"not null;unique"`
+ }
